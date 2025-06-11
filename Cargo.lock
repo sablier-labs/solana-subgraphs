@@ -1078,27 +1078,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lockup"
-version = "0.0.1"
-dependencies = [
- "anchor-lang",
- "anyhow",
- "base64 0.22.1",
- "borsh 0.10.4",
- "getrandom 0.2.15",
- "hex-literal",
- "num-bigint",
- "num-traits",
- "prost",
- "prost-types",
- "regex",
- "sologger_log_context",
- "substreams",
- "substreams-solana",
- "substreams-solana-program-instructions",
-]
-
-[[package]]
 name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1616,6 +1595,59 @@ name = "ryu"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
+
+[[package]]
+name = "sablier_apps_airdrops"
+version = "1.0.0"
+dependencies = [
+ "anchor-lang",
+ "anyhow",
+ "base64 0.22.1",
+ "borsh 0.10.4",
+ "getrandom 0.2.15",
+ "hex-literal",
+ "num-bigint",
+ "num-traits",
+ "prost",
+ "prost-types",
+ "regex",
+ "sablier_packages_substream",
+ "sologger_log_context",
+ "substreams",
+ "substreams-solana",
+ "substreams-solana-program-instructions",
+]
+
+[[package]]
+name = "sablier_apps_lockup"
+version = "1.0.0"
+dependencies = [
+ "anchor-lang",
+ "anyhow",
+ "base64 0.22.1",
+ "borsh 0.10.4",
+ "getrandom 0.2.15",
+ "hex-literal",
+ "num-bigint",
+ "num-traits",
+ "prost",
+ "prost-types",
+ "regex",
+ "sablier_packages_substream",
+ "sologger_log_context",
+ "substreams",
+ "substreams-solana",
+ "substreams-solana-program-instructions",
+]
+
+[[package]]
+name = "sablier_packages_substream"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "borsh 0.10.4",
+ "substreams-solana",
+]
 
 [[package]]
 name = "scopeguard"

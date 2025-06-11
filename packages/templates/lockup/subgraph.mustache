@@ -1,0 +1,19 @@
+specVersion: 1.0.0
+description: Substreams powered Subgraph for Sablier Lockup
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: substreams
+    name: sablier-lockup-subgraph
+    network: {{substream}}
+    source:
+      package:
+        moduleName: map_program_data
+        file: ../lockup-v1.0.0.spkg
+    mapping:
+      apiVersion: 0.0.7
+      kind: substreams/graph-entities
+      file: ./src/mappings.ts
+      handler: handleTriggers

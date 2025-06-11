@@ -1,0 +1,32 @@
+[package]
+name = "sablier_apps_lockup"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+name = "substreams"
+crate-type = ["cdylib"]
+
+[dependencies]
+sablier_packages_substream.workspace = true
+hex-literal.workspace = true
+num-bigint.workspace = true
+num-traits.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+substreams.workspace = true
+substreams-solana.workspace = true
+substreams-solana-program-instructions.workspace = true
+anchor-lang.workspace = true
+sologger_log_context.workspace = true
+base64.workspace = true
+borsh.workspace = true
+
+# Required so that ethabi > ethereum-types build correctly under wasm32-unknown-unknown
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.2", features = ["custom"] }
+
+
+[build-dependencies]
+anyhow.workspace = true
+regex.workspace = true 

@@ -1,0 +1,244 @@
+enum ContractCategory {
+  LockupLinear
+}
+
+enum StreamCategory {
+  LockupLinear
+}
+
+enum ActionCategory {
+  Cancel
+  Create
+  Renounce
+  Transfer
+  Withdraw
+}
+
+type Action @entity {
+  "unique identifier resolving to transaction hash"
+  id: ID!
+
+  "transaction details: block number"
+  block: BigInt!
+  "category of action e.g. Deposit or Withdraw"
+  category: ActionCategory!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "contract through which the stream actions has been triggered"
+  contract: Contract!
+  "transaction details: hash"
+  hash: String!
+
+  "stream linked to this action (or null if this is a contract level action)"
+  stream: Stream
+  "unique global id tracked by the subgraph watcher"
+  subgraphId: BigInt!
+  "transaction details: timestamp"
+  timestamp: BigInt!
+
+  "address of an actor, differs based on action type e.g. for Create it resolves to the sender"
+  addressA: String
+  "address of an actor, differs based on action type e.g. for Transfer it resolves to the new recipient"
+  addressB: String
+  "amount, differs based on action type e.g. for Deposit it resolves to the depositAmount"
+  amountA: BigInt
+  "amount, differs based on action type e.g. for Withdraw it resolves to the refundedAmount"
+  amountB: BigInt
+
+  "amount, records the fee paid for certain actions, in base asset (e.g. withdraw is payable >V23)"
+  fee: BigInt
+}
+
+type Asset @entity(immutable: true) {
+  "unique identifier resolving to the asset/token address"
+  id: ID!
+
+  "mint address of the asset/token"
+  address: String!
+  "mint address of the asset/token"
+  mint: String!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+
+  "token program (manager) address of the asset/token"
+  program: String!
+
+  "decimals of the asset/token"
+  decimals: BigInt!
+
+  "streams that rely on this asset/token"
+  streams: [Stream!]! @derivedFrom(field: "asset")
+}
+
+type Contract @entity {
+  "unique identifier resolving to contract address"
+  id: String!
+
+  "extended version of the lockup contracts (e.g. V10)"
+  version: String!
+  "hardcoded alias, resolved by replacing the contract address from the id with the contract alias"
+  alias: String!
+  "address of the contract"
+  address: String!
+
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+
+  "category of contract e.g. LockupLinear"
+  category: ContractCategory!
+  "streams created through this contract"
+  streams: [Stream!]! @derivedFrom(field: "contract")
+}
+
+type Stream @entity {
+  "unique identifier for the stream, resolving to the origin contract address concatenated with the chainCode and the nftMint"
+  id: String!
+
+  "hardcoded alias, resolved by replacing the contract address from the id with the contract alias"
+  alias: String!
+  "unique global id tracked by the subgraph watcher - 🚨 these may change if new contracts are added and the chronological order of streams changes"
+  subgraphId: BigInt!
+  "extended version of the lockup contracts (e.g. V10)"
+  version: String!
+
+  "type of stream (for sorting reasons)"
+  category: StreamCategory!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "contract through which this stream has been created"
+  contract: Contract!
+  "transaction hash for the stream creation - 🚨 since transactions include multiple instructions, the same hash can be shared by multiple streams"
+  hash: String!
+  "index of the instruction that creates the stream"
+  instruction: BigInt!
+  "timestamp of the stream creation (for sorting reasons)"
+  timestamp: BigInt!
+
+  "unique salt used to create the stream - necessary to ensure parallel execution"
+  salt: String!
+
+  "current recipient of the stream, can withdraw the funds (the recipient can change on stream/nft transfer)"
+  recipient: String!
+  "manager of the stream, defined at creation by the funder (usually the same as the funder)"
+  sender: String!
+  "list of relevant stream parties (for filtering) - sender, recipient, possibly sender's"
+  parties: [String!]!
+
+  "associated token account for sender and asset"
+  senderAta: String
+
+  "associated token account for recipient and nft itself"
+  recipientNFTAta: String!
+
+  "flag for linear streams with a cliff"
+  cliff: Boolean!
+
+  "flag for linear streams with an initial unlock"
+  initial: Boolean!
+
+  "asset supported by this stream"
+  asset: Asset!
+  "flag showing the cancelability of the stream (making it false is a one-way trip)"
+  cancelable: Boolean!
+  "action in which the stream has been made non-cancelable (can be the deposit transaction or a different one)"
+  renounceAction: Action
+  "timestamp for the when the stream was made non-cancelable"
+  renounceTime: BigInt
+  "flag showing if the stream was (making it true is a one-way trip)"
+  canceled: Boolean!
+  "action in which the stream was"
+  canceledAction: Action
+  "timestamp for the when the stream was canceled"
+  canceledTime: BigInt
+
+  "timestamp for the start of the cliff, only available on linear streams"
+  cliffTime: BigInt
+  "derived amount of the cliff, only available on linear streams"
+  cliffAmount: BigInt
+
+  "timestamp for the end of the stream"
+  endTime: BigInt!
+  "timestamp for the start of the stream"
+  startTime: BigInt!
+  "snapshot of the duration (difference between end and start time)"
+  duration: BigInt!
+
+  "flag showing the transferability of the stream, always true"
+  transferable: Boolean!
+
+  "amount deposit in the stream (without fees)"
+  depositAmount: BigInt!
+  "amount resolving to the sum still inside the stream (regardless of it being locked or not) (difference between deposit and withdrawn pre-cancel)"
+  intactAmount: BigInt!
+  "amount resolving to the sum of all withdrawals"
+  withdrawnAmount: BigInt!
+
+  "the initial unlock amount specifically for lockup linear"
+  initialAmount: BigInt
+
+  "stream nft mint"
+  nftMint: String!
+
+  "stream nft data"
+  nftData: String!
+
+  "actions triggered in the context of this stream"
+  actions: [Action!]! @derivedFrom(field: "stream")
+}
+
+type Ownership @entity {
+  "nft mint address concatenated with chainCode"
+  id: String!
+
+  "nft mint"
+  nftMint: String!
+
+  "owner account a.k.a stream recipient"
+  owner: String!
+
+  "associated token account between recipient and nft"
+  ownerAta: String!
+
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+
+  "stream entity this ownership is referring to"
+  stream: Stream!
+}
+
+type Watcher @entity {
+  "unique identifier for the watcher, resolving to the chainCode - there is one watcher for entire subgraph"
+  id: String!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "global index for streams"
+  streamIndex: BigInt!
+  "global index for streams"
+  actionIndex: BigInt!
+  "flag that defines the initialization status of the subgraph"
+  initialized: Boolean!
+  "list of logs, for debugging purposes"
+  logs: [String!]!
+}

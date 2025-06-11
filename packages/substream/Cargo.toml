@@ -1,0 +1,9 @@
+[package]
+name = "sablier_packages_substream"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64.workspace = true
+borsh.workspace = true
+substreams-solana.workspace = true 

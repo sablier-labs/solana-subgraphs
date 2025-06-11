@@ -1,0 +1,10 @@
+export let chainId = {{chainId}};    
+export let chainCode = "{{chainCode}}";    
+export let cluster = "{{cluster}}";
+export let substream = "{{substream}}";
+
+export let startBlock_lockup = {{startBlock.lockup}};
+export let startBlock_airdrops = {{startBlock.airdrops}};
+
+export let lockupLinear: string[][] = [{{#lockupLinear.V10}}["{{0}}", "{{1}}", "{{2}}"],{{/lockupLinear.V10}}];
+export let merkleInstant: string[][] = [{{#merkleInstant.V10}}["{{0}}", "{{1}}", "{{2}}"],{{/merkleInstant.V10}}];

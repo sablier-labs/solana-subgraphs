@@ -1,0 +1,16 @@
+{
+  "chainId": 900000020,
+  "chainCode": "SOLDEV",
+  "cluster": "devnet",
+  "substream": "solana-devnet",
+  "startBlock": {
+    "lockup": 384182200,
+    "airdrops": 386742340
+  },
+  "lockupLinear": {
+    "V10": [["DczGzCFQ5kHRBGVkH22HDdtduE4qaqopdc5HGLrAzfQD", "LL", "V10"]]
+  },
+  "merkleInstant": {
+    "V10": [["G3R4BBqjo2hFdPh8EZSQfpj2u8hFL57cE9KUH57NZw28", "MI", "V10"]]
+  }
+}

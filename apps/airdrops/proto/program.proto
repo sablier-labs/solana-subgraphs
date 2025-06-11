@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package substreams.v1.program;
+
+message Data {
+    repeated Claim claim_list = 1;
+    repeated Clawback clawback_list = 2;
+    repeated Create create_list = 3;
+
+    uint64 block_number = 4;
+    int64 block_timestamp = 5;
+}
+
+
+message Claim {
+    string instruction_program = 1;
+    uint64 instruction_index = 2;
+    string transaction_hash = 3;
+
+    uint64 index = 4;
+    uint64 amount = 5;
+    repeated string merkle_proof = 6;
+
+    string claimer = 7;
+    string campaign = 8;
+    string campaign_ata = 9;
+
+    string recipient = 10;
+    string recipient_ata = 11;
+    string receipt = 12;
+
+    string airdrop_token_mint = 13;
+    string airdrop_token_program = 14;
+    uint32 airdrop_token_decimals = 15;
+}
+
+message Clawback {
+    string instruction_program = 1;
+    uint64 instruction_index = 2;
+    string transaction_hash = 3;
+
+    string creator = 4;
+    string campaign = 5;
+    string campaign_ata = 6;
+
+    uint64 amount = 7;
+
+    string airdrop_token_mint = 8;
+    string airdrop_token_program = 9;
+    uint32 airdrop_token_decimals = 10;
+}
+
+
+message Create {
+    string instruction_program = 1;
+    uint64 instruction_index = 2;
+    string transaction_hash = 3;
+
+    string merkle_root = 4;
+    uint64 expiration = 5;
+    string ipfs_cid = 6;
+    string name = 7;
+    uint64 aggregated_amount = 8;
+    uint64 recipient_count = 9; 
+   
+    string creator = 10;
+    string campaign = 11;
+    string campaign_ata = 12;
+
+    string airdrop_token_mint = 13;
+    string airdrop_token_program = 14;
+    uint32 airdrop_token_decimals = 15;
+}
+

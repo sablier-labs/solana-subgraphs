@@ -1,0 +1,210 @@
+enum ActionCategory {
+  Claim
+  Clawback
+  Create
+}
+
+enum CampaignCategory {
+  Instant
+}
+
+type Action @entity {
+  "unique identifier resolving to transaction hash"
+  id: ID!
+
+  "transaction details: block number"
+  block: BigInt!
+  "category of action e.g. Claim or Create"
+  category: ActionCategory!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "contract through which the stream actions has been triggered"
+  campaign: Campaign!
+  "transaction details: hash"
+  hash: String!
+
+  "unique global id tracked by the subgraph watcher"
+  subgraphId: BigInt!
+  "transaction details: timestamp"
+  timestamp: BigInt!
+
+  "claim action data: amount"
+  claimAmount: BigInt
+  "claim action data: recipient index"
+  claimIndex: BigInt
+  "claim action data: recipient index"
+  claimRecipient: String
+  "claim action data: receipt account"
+  claimReceipt: String
+
+  "clawback action data: amount"
+  clawbackAmount: BigInt
+  "clawback action data: amount"
+  clawbackFrom: String
+  "clawback action data: amount"
+  clawbackTo: String
+
+  "amount, records the fee paid for certain actions, in SOL"
+  fee: BigInt
+}
+
+type Activity @entity {
+  "unique identifier resolving to the string 'activity' concatenated with the campaign id and the day of the snapshot"
+  id: String!
+  "campaign the activity (day) is linked to"
+  campaign: Campaign!
+
+  "timestamp for the start of the day"
+  timestamp: BigInt!
+  "day index (UNIX time / 24 * 60 * 60)"
+  day: BigInt!
+
+  "amount claimed during the day"
+  amount: BigInt!
+  "number of claims completed during the day"
+  claims: BigInt!
+}
+
+type Asset @entity(immutable: true) {
+  "unique identifier resolving to the asset/token address"
+  id: ID!
+
+  "mint address of the asset/token"
+  address: String!
+  "mint address of the asset/token"
+  mint: String!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+
+  "token program (manager) address of the asset/token"
+  program: String!
+
+  "decimals of the asset/token"
+  decimals: BigInt!
+
+  "campaigns that rely on this asset/token"
+  campaigns: [Campaign!]! @derivedFrom(field: "asset")
+}
+
+type Campaign @entity {
+  "unique identifier for the campaign, resolving to the campaign account concatenated with the chainCode"
+  id: String!
+  "unique global id tracked by the subgraph watcher - 🚨 these may change if new contracts are added and the chronological order of streams changes"
+  subgraphId: BigInt!
+  "address of the campaign account"
+  address: String!
+  "address of the campaign ATA"
+  ata: String!
+
+  "underlying asset"
+  asset: Asset!
+  "factory producing the campaign"
+  factory: Factory!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "transaction hash for the campaign creation"
+  hash: String!
+  "timestamp of the campaign creation (for sorting reasons)"
+  timestamp: BigInt!
+  "category e.g. LockupLinear or Instant"
+  category: CampaignCategory!
+
+  "index of the instruction that creates the stream"
+  instruction: BigInt!
+
+  "address of the campaign admin, entitled to clawback"
+  admin: String!
+  "merkle root"
+  root: String!
+  "flag showing if the campaign expires or is forever claimable"
+  expires: Boolean!
+  "time at which the campaign expires and clawback is enabled, if the expires flag is true"
+  expiration: BigInt
+  "name assigned as the campaign title"
+  name: String!
+
+  "ipfs content identifier for the list of recipients and other static details"
+  ipfsCID: String!
+  "funds required for the entire campaign to conclude"
+  aggregateAmount: BigInt!
+  "total number of recipients"
+  totalRecipients: BigInt!
+
+  "action in which the campaign underwent a clawback, if it was supposed to expire"
+  clawbackAction: Action
+  "timestamp for the when the campaign underwent a clawback"
+  clawbackTime: BigInt
+
+  "total claimed amount up to this point"
+  claimedAmount: BigInt!
+  "number of claims requested up to this point"
+  claimedCount: BigInt!
+
+  "index of the campaign based on the factory's campaignIndex"
+  position: BigInt!
+  "version (e.g. V10)"
+  version: String!
+  "persisted fee for this campaign"
+  fee: BigInt!
+
+  "actions triggered in the context of this campaign"
+  actions: [Action!]! @derivedFrom(field: "campaign")
+  "list of daily activity snapshots for days with 1+ events"
+  activities: [Activity!]! @derivedFrom(field: "campaign")
+}
+
+type Factory @entity {
+  "unique identifier resolving to contract address"
+  id: String!
+
+  "hardcoded alias"
+  alias: String!
+  "address of the contract"
+  address: String!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+
+  "version (e.g. V10)"
+  version: String!
+
+  "factory index for campaigns"
+  campaignIndex: BigInt!
+
+  "list of campaigns"
+  campaigns: [Campaign!]! @derivedFrom(field: "factory")
+}
+
+type Watcher @entity {
+  "unique identifier for the watcher, resolving to the chainCode - there is one watcher for entire subgraph"
+  id: String!
+  "hardcoded chain code, to be included in aliases and cross-chain filtering"
+  chainCode: String!
+  "hardcoded chain id, made up chain id to make chain definitions compatible with those on the EVM"
+  chainId: BigInt!
+  "hardcoded cluster name"
+  cluster: String!
+  "global index for streams"
+  campaignIndex: BigInt!
+  "global index for streams"
+  actionIndex: BigInt!
+  "flag that defines the initialization status of the subgraph"
+  initialized: Boolean!
+  "list of logs, for debugging purposes"
+  logs: [String!]!
+}

@@ -1,0 +1,44 @@
+{
+  "name": "@sablier/solana-indexers-lockup",
+  "version": "0.2.0",
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.73.0",
+    "@graphprotocol/graph-ts": "^0.34.0",
+    "@types/node": "^16.11.9",
+    "as-proto": "^1.3.0",
+    "assemblyscript-json": "^1.1.0",
+    "protoc-gen-js": "^3.21.2",
+    "protocol-buffers": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.1"
+  },
+  "devDependencies": {
+    "@stepd/as-proto-gen": "^1.3.3",
+    "@types/google-protobuf": "^3.15.12",
+    "dotenv-cli": "^8.0.0",
+    "matchstick-as": "^0.6.0",
+    "mustache": "^4.2.0"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "_codegen": "yarn _codegen-yaml-substream && yarn _codegen-yaml-subgraph && yarn _codegen-constants-rs && yarn _codegen-constants-assembly && yarn _codegen-proto-rs && yarn substream-build && yarn _codegen-proto-assembly && yarn _codegen-assembly",
+    "_codegen-assembly": "graph codegen",
+    "_codegen-constants-assembly": "mkdir -p ../subgraph/generated && mustache ../../../packages/constants/$CLUSTER.json ../../../packages/templates/constants.ts.mustache > ../subgraph/generated/env.ts",
+    "_codegen-constants-rs": "mkdir -p ../src/generated && mustache ../../../packages/constants/$CLUSTER.json ../../../packages/templates/constants.rs.mustache > ../src/generated/constants.rs",
+    "_codegen-proto-assembly": "sh -c '{ buf generate --type=\"substreams.v1.program.Data\" ../airdrops-v1.0.0.spkg#format=bin; } > /dev/null 2>&1; echo \"^^^ $ buf generate output silenced\"; echo \"\"'",
+    "_codegen-proto-rs": "cd ../ && substreams protogen ./substreams.yaml",
+    "_codegen-yaml-substream": "mustache ../../../packages/constants/$CLUSTER.json ../../../packages/templates/lockup/substreams.mustache > ../substreams.yaml",
+    "_codegen-yaml-subgraph": "mustache ../../../packages/constants/$CLUSTER.json ../../../packages/templates/lockup/subgraph.mustache > ./subgraph.yaml",
+    "_subgraph-deploy-aws": "dotenv -e ./../../../.env -- yarn _subgraph-deploy-aws-command",
+    "_subgraph-deploy-aws-command": "graph deploy $NAME --ipfs $AWS_NODE_IPFS --node $AWS_NODE_ENDPOINT --deploy-key $AWS_NODE_DEPLOY_KEY",
+    "_subgraph-create-aws-command": "graph create --node $AWS_NODE_ENDPOINT --access-token $AWS_NODE_DEPLOY_KEY $NAME",
+    "create-aws": "NAME=sablier-solana-lockup-experimental dotenv -e ./../../../.env -- yarn _subgraph-create-aws-command",
+    "deploy-aws:devnet": "CLUSTER=devnet NAME=sablier-solana-lockup-experimental yarn _subgraph-deploy-aws",
+    "setup:devnet": "CLUSTER=devnet yarn _codegen",
+    "subgraph-build": "graph build",
+    "substream-auth": "substreams auth && echo '⚠️ Please manually run the export line pasted in .substreams.env in your terminal to add the variable to your environment'",
+    "substream-build": "substreams build",
+    "substream-gui:devnet": "yarn substream-build && substreams gui -e devnet.sol.streamingfast.io:443 ../substreams.yaml",
+    "substream-run:devnet": "yarn substream-build && substreams run -e devnet.sol.streamingfast.io:443 ../substreams.yaml"
+  }
+}
